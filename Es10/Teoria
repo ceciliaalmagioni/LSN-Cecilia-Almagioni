@@ -1,0 +1,204 @@
+MPI BCAST
+
+int MPI_Bcast(void *buffer, int count, MPI_Datatype datatype, int root, MPI_Comm comm)
+
+- buffer: Puntatore al buffer contenente il dato da trasmettere. Nel processo "root", il valore nel buffer è il dato da trasmettere, mentre negli altri processi, il buffer viene utilizzato per memorizzare il dato ricevuto.
+- count: Numero di elementi da trasmettere/ricevere.
+- datatype: Tipo di dato degli elementi nel buffer.
+- root: Identificatore del processo "root" che trasmette il dato agli altri processi.
+- comm: Comunicatore che specifica il gruppo di processi coinvolti nella comunicazione.
+
+Il processo "root" è il processo che si occupa di iniziare la comunicazione broadcast utilizzando la funzione MPI_Bcast. Nel contesto di MPI, il processo con rank 0 viene spesso designato come processo root per eseguire operazioni di broadcast o altre operazioni collettive.
+
+Nel programma che hai fornito come esempio, il processo con rank 0 è il processo root che trasmette i dati agli altri processi utilizzando MPI_Bcast. Quando viene chiamata la funzione MPI_Bcast, il processo root (con rank 0) invia i dati contenuti nell'array my_values a tutti gli altri processi nel comunicatore MPI_COMM_WORLD.
+Make sure that the amount of data transmitted matches between the sending process and the receiving processes.
+
+
+
+MPI GATHER
+
+MPI_Gather è una funzione di comunicazione collettiva in MPI che consente di raccogliere dati da tutti i processi in un singolo processo chiamato processo root.
+
+int MPI_Gather(const void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype, int root, MPI_Comm comm)
+               
+- sendbuf: Puntatore al buffer contenente i dati inviati da ciascun processo.
+- sendcount: Numero di elementi inviati da ogni processo.
+- sendtype: Tipo di dato degli elementi inviati.
+- recvbuf: Puntatore al buffer di ricezione nel processo root.
+- recvcount: Numero di elementi che il processo root attende da ogni processo.
+- recvtype: Tipo di dato degli elementi ricevuti.
+- root: Rank del processo root che riceve i dati.
+- comm: Comunicatore che definisce il gruppo di processi coinvolti nella comunicazione.
+
+
+
+MPI REDUCE
+
+MPI_Reduce è una funzione di comunicazione collettiva in MPI che consente di ridurre i dati provenienti da tutti i processi a un unico processo, eseguendo un'operazione specificata su di essi.
+La funzione MPI_Reduce richiede un argomento di dati di input da ogni processo partecipante, esegue l'operazione specificata (ad esempio, somma, prodotto, minimo, massimo) su questi dati e restituisce il risultato aggregato sul processo specificato come destinazione.
+
+L'utilizzo di MPI_Reduce richiede che tutti i processi partecipanti chiamino la funzione con gli stessi argomenti. Il risultato aggregato sarà disponibile solo sul processo specificato come destinazione.
+
+    sendbuf: Questo è l'indirizzo del buffer dei dati di input nel processo chiamante. Ogni processo deve fornire un valore iniziale o una porzione dei dati da ridurre.
+
+    recvbuf: Questo è l'indirizzo del buffer di output nel processo destinatario. Solo il processo specificato come destinazione riceverà il risultato aggregato. Gli altri processi possono passare NULL come argomento.
+
+    count: Questo è il numero di elementi nel buffer sendbuf.
+
+    datatype: Questo è il tipo di dato degli elementi nel buffer sendbuf. È necessario specificare un tipo corretto che corrisponda all'effettivo tipo di dato dei dati.
+
+    op: Questo è l'operazione di riduzione da eseguire sui dati. Puoi specificare operazioni come somma, prodotto, minimo, massimo, ecc.
+
+    root: Questo è il numero di rango del processo destinatario che riceverà il risultato aggregato.
+
+    comm: Questo è il comunicatore che definisce il gruppo di processi coinvolti nella comunicazione. Di solito, si utilizza MPI_COMM_WORLD per coinvolgere tutti i processi in esecuzione.
+    
+le operazioni che può fare alla slide 41
+
+
+
+MPI COMM SPLIT
+
+MPI_Comm_Split è una funzione utilizzata per dividere un comunicatore MPI in sottocomunicatori più piccoli in base a un criterio specificato. Ogni sottocomunicatore creato condivide un sottoinsieme di processi del comunicatore originale.
+
+Nella chiamata a MPI_Comm_Split, dovrai fornire il comunicatore di origine (il comunicatore MPI che vuoi dividere), un valore intero chiamato "color" che specifica il criterio di suddivisione, e un valore intero chiamato "key" che determina l'ordine all'interno del nuovo comunicatore.
+
+I processi nel comunicatore di origine con lo stesso valore "color" verranno assegnati allo stesso sottocomunicatore, mentre il valore "key" viene utilizzato per ordinare i processi all'interno dello stesso sottocomunicatore.
+
+Ad esempio, se hai un comunicatore MPI con 8 processi e utilizzi MPI_Comm_Split con "color" uguale a 0 per la metà dei processi e "color" uguale a 1 per l'altra metà dei processi, otterrai due sottocomunicatori separati: uno con 4 processi e l'altro con 4 processi. All'interno di ciascun sottocomunicatore, i processi verranno ordinati in base al valore "key" specificato.
+La divisione di un comunicatore in sottocomunicatori può essere utile per eseguire operazioni parallele più specifiche o per creare gruppi di processi che devono lavorare insieme su un particolare compito.
+
+    MPI_Comm comm: Il comunicatore di origine che si desidera suddividere.
+    int color: Il valore che viene utilizzato per determinare a quale sottocomunicatore appartengono i processi. I processi con lo stesso valore di "color" appartengono allo stesso sottocomunicatore.
+    int key: Il valore utilizzato per ordinare i processi all'interno dello stesso sottocomunicatore. I processi vengono ordinati in base al valore "key" in modo crescente.
+    MPI_Comm* newcomm: Il puntatore a un nuovo oggetto di tipo MPI_Comm che conterrà il nuovo comunicatore creato dalla suddivisione.
+    
+    
+
+MPII SEND/RECV
+    
+    differenza tra RECV e IRECV, SEND e ISEND (più veloce ma più pericolosa)
+    
+    MPI_Send e MPI_Recv sono due funzioni utilizzate per la comunicazione punto a punto in MPI. MPI_Send viene utilizzata per inviare dati da un processo mittente a un processo destinatario, mentre MPI_Recv viene utilizzata dal processo destinatario per ricevere i dati inviati dal processo mittente.
+
+
+    MPI_Send:
+        Argomenti:
+            const void* buf: Il puntatore al buffer contenente i dati da inviare.
+            int count: Il numero di elementi da inviare.
+            MPI_Datatype datatype: Il tipo di dato degli elementi nel buffer.
+            int dest: Il rank del processo destinatario.
+            int tag: Un identificatore che viene utilizzato per etichettare il messaggio.
+            MPI_Comm comm: Il comunicatore utilizzato per l'invio.
+        Descrizione: MPI_Send invia un certo numero di elementi dal buffer di invio al processo destinatario specificato. Il mittente deve specificare il buffer, il numero di elementi, il tipo di dato, il destinatario, l'etichetta del messaggio e il comunicatore. MPI_Send è una chiamata bloccante, il che significa che il mittente rimarrà bloccato fino a quando i dati non saranno stati inviati correttamente al destinatario.
+
+    MPI_Recv:
+        Argomenti:
+            void* buf: Il puntatore al buffer in cui verranno ricevuti i dati.
+            int count: Il numero di elementi attesi.
+            MPI_Datatype datatype: Il tipo di dato degli elementi nel buffer di ricezione.
+            int source: Il rank del processo mittente.
+            int tag: L'etichetta del messaggio da ricevere.
+            MPI_Comm comm: Il comunicatore utilizzato per la ricezione.
+            MPI_Status* status: Lo stato della ricezione (opzionale).
+        Descrizione: MPI_Recv attende e riceve un certo numero di elementi dal processo mittente specificato. Il destinatario deve specificare il buffer di ricezione, il numero di elementi attesi, il tipo di dato, il mittente, l'etichetta del messaggio, il comunicatore e può opzionalmente specificare un oggetto di stato per ottenere informazioni sulla ricezione. MPI_Recv è anche una chiamata bloccante, il destinatario rimarrà bloccato fino a quando i dati non saranno stati ricevuti correttamente dal mittente.
+        
+        
+        
+        Es Lello
+        
+	int* imesg = new int[N]; 
+	int* imesg2 = new int[N];
+	int itag=1; int itag2=2;
+	vector <int> swap (4);
+	vector <bool> preso(4); //valore booleano per ciascun rank
+        
+for(int i=0; i<300; i++){
+		
+		
+		Pop = New_Pop(Pop);
+		for(int j=0; j<4; j++){
+			if(rank == j){
+				cout <<"rk " << j << " " <<  i << " " << endl;
+			}
+		}
+		for(int j=0; j<4; j++){
+			preso[j] = false; //inizializzo tutto a falso
+		}
+		if(i%Nmigr == 0 && i != 0){
+			swap[0] = my_rand0.Rannyu(0., 4.);
+			preso[swap[0]] = true;
+			do{
+				swap[1] = my_rand0.Rannyu(0., 4.);
+			}while(swap[0] == swap[1]); //il secondo elemento dello scambio dev'essere diverso dal primo
+			preso[swap[1]] = true;
+			
+			for(int j=0; j<4; j++){
+				if(preso[j] == false){
+					swap[2] = j; //il terzo el di swap è diverso da 0 e 1 perché loro sono veri
+				}
+			}
+			swap[3] = 6 - swap[0] - swap[1] - swap[2]; //il quarto el di swap è il rimanente 
+			cout << "swap ";
+			for(int j=0; j<4; j++){
+			 	cout << swap[j] << " ";
+			 }
+			 cout << endl; 
+			 
+			
+			//scambio i migliori delle prime due popolazioni: invece che fare due scambi non si può fare Comm_split?
+			for(int j=0; j<N; j++){	
+			 	imesg[j] = Pop[0][j];
+			 	imesg2[j] = Pop[0][j];
+			}
+			 
+			if(rank==swap[1]){
+				MPI_Send(&imesg[0],N,MPI_INTEGER,swap[0],itag,MPI_COMM_WORLD);
+				MPI_Recv(&imesg2[0],N,MPI_INTEGER,swap[0],itag2, MPI_COMM_WORLD,&stat2);
+				//cout<<"messaggio1 = "<<imesg2[0]<<endl;
+			}
+			else if(rank==swap[0]){
+				MPI_Send(&imesg2[0],N,MPI_INTEGER,swap[1],itag2, MPI_COMM_WORLD);
+				MPI_Recv(&imesg[0],N,MPI_INTEGER,swap[1],itag, MPI_COMM_WORLD,&stat1);
+				//cout<<"messaggio = "<<imesg[0]<<endl;
+			}
+			
+			for(int j=0; j<N; j++){
+				if(rank==swap[1]){
+					Pop[0][j] = imesg2[j];
+				}
+				else if(rank==swap[0]){
+					Pop[0][j] = imesg[j];
+				}
+			}
+			
+			
+			//scambio i migliori delle seconde due popolazioni
+			for(int j=0; j<N; j++){	
+			 	imesg[j] = Pop[0][j];
+			 	imesg2[j] = Pop[0][j];
+			}
+			 
+			if(rank==swap[3]){
+				MPI_Send(&imesg[0],N,MPI_INTEGER,swap[2],itag,MPI_COMM_WORLD);
+				MPI_Recv(&imesg2[0],N,MPI_INTEGER,swap[2],itag2, MPI_COMM_WORLD,&stat2);
+				//cout<<"messaggio1 = "<<imesg2[0]<<endl;
+			}
+			else if(rank==swap[2]){
+				MPI_Send(&imesg2[0],N,MPI_INTEGER,swap[3],itag2, MPI_COMM_WORLD);
+				MPI_Recv(&imesg[0],N,MPI_INTEGER,swap[3],itag, MPI_COMM_WORLD,&stat1);
+				//cout<<"messaggio = "<<imesg[0]<<endl;
+			}
+			
+			for(int j=0; j<N; j++){
+				if(rank==swap[3]){
+					Pop[0][j] = imesg2[j];
+				}
+				else if(rank==swap[2]){
+					Pop[0][j] = imesg[j];
+				}
+			}
+				 
+			 		
+}
+
